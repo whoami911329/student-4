@@ -1,16 +1,20 @@
 from django.shortcuts import render
+import requests
+from .models import ResponseCode
 
 
 VICTIMS = [
-    'https://www.djangoproject.com/',
-    'www.django-rest-framework.org',
+    'https://djangoproject.com/',
     'https://pythonworld.ru/',
-    'www.python.org'
+    'https://python.org/'
 ]
 
 
 def index(request):
-    # data =
+    for url in VICTIMS:
+        resp = requests.get(url)
+        new_code = ResponseCode.objects.create(url=url, code=resp.status_code)
+    codes = ResponseCode.objects.all()
     template_name = 'core/index.html'
-    context = {'data', data}
+    context = {'codes': codes}
     return render(request, template_name, context)
