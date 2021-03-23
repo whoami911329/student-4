@@ -1,7 +1,6 @@
 from django.shortcuts import render
 import requests
 from .models import ResponseCode
-from datetime import datetime
 
 
 VICTIMS = [
@@ -14,7 +13,7 @@ VICTIMS = [
 def index(request):
     for url in VICTIMS:
         resp = requests.get(url)
-        new_code = ResponseCode.objects.create(url=url, code=resp.status_code)
+        ResponseCode.objects.create(url=url, code=resp.status_code)
     codes = ResponseCode.objects.all()
     template_name = 'core/index.html'
     context = {'codes': codes}
