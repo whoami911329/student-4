@@ -14,7 +14,11 @@
     
     <ul class="list-unstyled ml-4">
         {% for key in codes %}
-            <li>[<small>{{ key.created|date:"SHORT_DATE_FORMAT" }} at {{ key.created|time }}</small>] [<small class="text-muted">{{ key }}</small>] [{{ key.code }}]</li>
+            <li>
+                [<small>{{ key.date_time|date:"SHORT_DATE_FORMAT" }} at {{ key.date_time|time }}</small>]
+                [<small class="text-muted">{{ key }}</small>]
+                [{{ key.status_code }}]
+            </li>
         {% endfor %}
     </ul>
 
