@@ -1,20 +1,16 @@
-from django.shortcuts import render
-import requests
+from django.shortcuts import render, redirect
 from .models import Entry
-
-
-VICTIMS = [
-    'https://djangoproject.com/',
-    'https://pythonworld.ru/',
-    'https://python.org/'
-]
+from .utils import get_all_links
 
 
 def index(request):
-    for url in VICTIMS:
-        resp = requests.get(url)
-        Entry.objects.create(url=url, status_code=resp.status_code)
-    codes = Entry.objects.all()
     template_name = 'core/index.html'
-    context = {'codes': codes}
-    return render(request, template_name, context)
+    return render(request, template_name, {'codes': Entry.objects.all()})
+
+
+def get_urls(request):
+    url = str(request.GET.get('url'))
+    get_all_links(url)
+    return redirect('get-urls')
+
+# https://www.geeksforgeeks.org/

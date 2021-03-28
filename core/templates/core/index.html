@@ -20,6 +20,10 @@
                 [{{ key.status_code }}]
             </li>
         {% endfor %}
+        <form action="{% url 'get-urls' %}" method="get">
+          <input name="url" type="text">
+          <button type="submit">submit</button>
+        </form>
     </ul>
 
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
