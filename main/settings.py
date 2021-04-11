@@ -38,7 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'core.apps.CoreConfig',
+    'receiver.apps.ReceiverConfig',
     'rest_framework',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -127,4 +129,8 @@ STATICFILES_DIRS = [
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# celery settings
 CELERY_BROKER_URL = 'amqp://localhost'
+
+# channels settings
+ASGI_APPLICATION = 'main.asgi.application'

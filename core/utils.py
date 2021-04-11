@@ -1,78 +1,57 @@
 import time
 import json
-import certifi
 import requests
-from bs4 import BeautifulSoup
+from requests.packages.urllib3.util.url import parse_url
+from bs4 import BeautifulSoup as bs4
 from django.conf import settings
 
-from urllib3.exceptions import (MaxRetryError,
-                                NewConnectionError,
-                                ConnectionError)
-from requests.exceptions import ReadTimeout, SSLError
 
-
-# default var
-
-# ERRORS = (MaxRetryError, NewConnectionError,
-#           ConnectionError, SSLError, ReadTimeout)
+F_STORAGE = settings.BASE_DIR / 'url_query_files'
 
 
 def get_all_links(url):
-
+    url = parse_url(url)
     grab = requests.get(url)
-    soup = BeautifulSoup(grab.text, 'html.parser')
-
-    f_name = url.lstrip(
-        f"{'https://', 'http://'}{'www.', ''}").rstrip(
-            f"{'.org/', '.com/'}") + ".json"
-    f_path = settings.BASE_DIR / 'url_files' / f_name
+    soup = bs4(grab.text, 'html.parser')
+    f_name = url.host + ".json"
+    f_path = F_STORAGE / f_name
     f = open(f_path, "w")
     counter = 0
     for link in soup.find_all("a"):
         data = link.get('href')
-        if data is not None:
-            if data.startswith("http://") or data.startswith("https://"):
-                try:
-                    counter += 1
-                    req_session = requests.Session()
-                    req_session.cert = '/mnt/sda2/backup/dev/STUDENTS/mL-proj/env/lib/python3.8/site-packages/certifi/cacert.pem'
-                    req = requests.get(
-                        data,
-                        # cert=certifi.where(),
-                        allow_redirects=False,
-                        timeout=4
-                    )
+        if parse_url(data).host == url.host:
+            try:
+                session = requests.Session()
+                session.cert = F_STORAGE / 'cacert.pem'
+                req = requests.get(data, timeout=1)
+                counter += 1
 
-                    writable = json.dumps({counter: {
-                        'URL': data,
-                        'CODE': req.status_code
-                    }}, indent=2)
+                to_dict = {
+                    parse_url(data).path: {
+                        'count': counter,
+                        'STATUS CODE': str(req.status_code),
+                        'SCHEME': parse_url(data).scheme,
+                        'AUTH': parse_url(data).auth,
+                        'PORT': parse_url(data).port
+                    }
+                }
 
-                    print(writable)
-
-                    f.write(writable)
-                    f.write("\n")
-
-                except ReadTimeout:
-                    print('Read ttttttimeout')
-
-                except SSLError:
-                    print('SSLError')
-
-                except MaxRetryError:
-                    print('max-retry EXEPTION')
-
-                except NewConnectionError:
-                    print('New Connect')
-
-                except ConnectionError:
-                    print('Connection eRRor')
-
-                except TimeoutError:
-                    print('timeOUTError')
-
-                except BaseException:
-                    time.sleep(3)
-                    print("here is ass of a world")
+                print(to_dict)
+                f.write(json.dumps(to_dict, indent=4))
+                f.write("\n")
+            except Exception as e:
+                counter += 1
+                to_dict = {
+                    parse_url(data).path: {
+                        'count': counter,
+                        'ERROR': type(e).__name__,
+                        'SCHEME': parse_url(data).scheme,
+                        'AUTH': parse_url(data).auth,
+                        'PORT': parse_url(data).port
+                    }
+                }
+                print(to_dict)
+                f.write(json.dumps(to_dict, indent=4))
+                f.write("\n")
     f.close()
     return f.name
